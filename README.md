@@ -1,23 +1,87 @@
 # ![RealWorld Example App](logo.png)
 
-> ### [YOUR_FRAMEWORK] codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld) spec and API.
+# RealWorld Http4s + Cats + Slick
+This example of the [RealWorld](https://github.com/gothinkster/realworld) spec and API implementation is based on not 
+widely used combination of Typelevel and Slick. The goal is to achieve more type safety in DB actions and make changes 
+of DB schema easier.
 
+# Stack
+- [Cats](https://github.com/typelevel/cats)
+- [Http4s](https://github.com/http4s/http4s)
+- [Slick](https://github.com/slick/slick)
+- [PostgreSQL](https://www.postgresql.org/)
+- [Flyway](https://github.com/flyway/flyway)
 
-### [Demo](https://demo.realworld.io/)&nbsp;&nbsp;&nbsp;&nbsp;[RealWorld](https://github.com/gothinkster/realworld)
-
-
-This codebase was created to demonstrate a fully fledged fullstack application built with **[YOUR_FRAMEWORK]** including CRUD operations, authentication, routing, pagination, and more.
-
-We've gone to great lengths to adhere to the **[YOUR_FRAMEWORK]** community styleguides & best practices.
-
-For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
-
+# The use case
+The main use case of this composition style is the support of complex CRUD+L APIs that could get changes in DB schema.
+We make these changes "driven by DB schema" and perform them with steps below:
+- add a Flyway change
+- re-generate Slick Models
+- fix compilation errors and make required changes in the codebase
 
 # How it works
 
-> Describe the general architecture of your app here
+### Code composition
+```
+    +----------------+
+    |     Routes     |
+    +----------------+
+             |
+             v
+    +----------------+
+    |     Service    |
+    +----------------+
+             |
+             v
+  +--------------------+
+  |     Repository     |
+  +--------------------+
+```
 
-# Getting started
+### Packages
 
-> npm install, npm start, etc.
+`routes` package defines APIs and exposed models
 
+`services` package defines business rules and internal models
+
+`db` package defines persistence and DB models
+
+### Getting started
+```bash
+# Run DB instance, for example, with docker
+docker run -p 5432:5432 --name some-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=condoit -d postgres
+
+# Init schema with flyway (assume your working dir is the cloned repo)
+flyway \
+  -url="jdbc:postgresql://localhost:5432/condoit" \
+  -user="postgres" \
+  -password="postgres" \
+  -createSchemas="true" \
+  -schemas="condoit" \
+  -locations="filesystem:./sql/" \
+  -X migrate -outputType=json
+  
+# Run server
+sbt run
+```
+
+### Making changes
+To perform changes, you need an initialized DB from the previous step above.
+```bash
+echo "ALTER TABLE users ADD COLUMN country TEXT NOT NULL;" > ./sql/V2__changeset.sql
+
+# Perform schema changes at the running DB
+flyway \
+  -url="jdbc:postgresql://localhost:5432/condoit" \
+  -user="postgres" \
+  -password="postgres" \
+  -createSchemas="true" \
+  -schemas="condoit" \
+  -locations="filesystem:./sql/" \
+  -X migrate -outputType=json
+
+# Regenerate Slick Schema
+sbt clean compile 'slickPgGen localhost 5432 condoit condoit postgres postgres'
+
+# Fix compilation errors and add changes at business logic, routes and models
+```
