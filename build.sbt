@@ -1,18 +1,18 @@
 import complete.DefaultParsers._
 import sbtrelease.ReleaseStateTransformations._
 
-val Http4sVersion = "1.0.0-M30"
+val Http4sVersion = "1.0.0-M36"
 val CirceVersion = "0.14.1"
 val MunitVersion = "0.7.29"
 val LogbackVersion = "1.2.6"
-val MunitCatsEffectVersion = "1.0.6"
-val SlickVersion = "3.3.3"
+val MunitCatsEffectVersion = "1.0.7"
+val SlickVersion = "3.4.1"
 
 lazy val root = (project in file("."))
   .settings(
     organization := "com.marmaladesky",
     name := "condoit",
-    scalaVersion := "2.13.6",
+    scalaVersion := "2.13.8",
     scalacOptions ++= Seq(
       "-Ymacro-annotations",
       """-Wconf:src=.*gen\/Tables\.scala:silent"""
@@ -36,7 +36,7 @@ lazy val root = (project in file("."))
       // Slick
       "com.typesafe.slick"  %% "slick" % SlickVersion,
       "com.typesafe.slick"  %% "slick-hikaricp" % SlickVersion,
-      "com.github.tminglei" %% "slick-pg" % "0.19.7",
+      "com.github.tminglei" %% "slick-pg" % "0.21.0",
       "com.typesafe.slick"  %% "slick-codegen" % SlickVersion,
 
       // Logging
@@ -51,7 +51,7 @@ lazy val root = (project in file("."))
       "org.mockito"    %% "mockito-scala"       % "1.16.49"              % Test,
       "io.circe"       %% "circe-optics"        % CirceVersion           % Test
     ),
-    addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.13.0" cross CrossVersion.full),
+    addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.13.2" cross CrossVersion.full),
     addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
