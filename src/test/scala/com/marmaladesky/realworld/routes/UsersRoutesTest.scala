@@ -49,8 +49,6 @@ class UsersRoutesTest extends munit.FunSuite {
 
     val jsonBody = parser.parse(body).getOrElse(throw new RuntimeException("Unexpected response"))
 
-    println(jsonBody.noSpaces)
-
     assert { root.profile.username.string.getOption(jsonBody) contains "username" }
     assert { root.profile.bio.`null`.getOption(jsonBody).nonEmpty }
 
