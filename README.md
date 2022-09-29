@@ -62,6 +62,7 @@ flyway \
   -X migrate -outputType=json
   
 # Run server
+# The configuration is made with .env file, default values are provided
 sbt run
 ```
 
