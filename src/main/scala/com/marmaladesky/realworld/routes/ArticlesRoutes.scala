@@ -11,12 +11,18 @@ import org.http4s.AuthedRoutes
 import org.http4s.dsl.Http4sDsl
 
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 object ArticlesRoutes {
 
   private object json {
 
     implicit val j_Config: Configuration = Configuration.default.withDefaults
+
+    implicit val custom_offset_encoder: Encoder[OffsetDateTime] = {
+      val formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSZ")
+      (a: OffsetDateTime) => Json.fromString(a.format(formatter))
+    }
 
     @ConfiguredJsonCodec
     case class ArticleResponse(article: ArticleBody)
