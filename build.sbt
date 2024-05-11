@@ -18,6 +18,7 @@ val PureConfigVersion = "0.17.6"
 val MockitoScalaVersion = "1.17.31"
 val TypelevelKindProjectorVersion = "0.13.3"
 val BetterMonadicForVersion = "0.3.1"
+val JAnsiVersion = "2.4.1"
 
 lazy val root = (project in file("."))
   .settings(
@@ -54,6 +55,7 @@ lazy val root = (project in file("."))
       // Logging
       "com.typesafe.scala-logging" %% "scala-logging" % ScalaLoggingVersion,
       "org.typelevel" %% "log4cats-slf4j" % Log4CatsVersion,
+      "org.fusesource.jansi" % "jansi" % JAnsiVersion,
 
       // Config
       "com.github.pureconfig" %% "pureconfig" % PureConfigVersion,
