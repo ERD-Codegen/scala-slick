@@ -69,6 +69,7 @@ lazy val root = (project in file("."))
     addCompilerPlugin("org.typelevel" %% "kind-projector" % TypelevelKindProjectorVersion cross CrossVersion.full),
     addCompilerPlugin("com.olegpy" %% "better-monadic-for" % BetterMonadicForVersion),
     Compile / run / fork := true,
+    Compile / run / mainClass := Some("com.marmaladesky.realworld.Main"),
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
