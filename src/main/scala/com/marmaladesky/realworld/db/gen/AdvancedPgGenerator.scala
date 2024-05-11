@@ -46,7 +46,7 @@ object AdvancedPgGenerator {
         override def Table = new Table(_) { table =>
           override def Column = new Column(_) { column =>
             override def rawType: String = {
-              model.options.find(_.isInstanceOf[ColumnOption.SqlType]).flatMap { tpe =>
+              this.model.options.find(_.isInstanceOf[ColumnOption.SqlType]).flatMap { tpe =>
                 val typeName = tpe.asInstanceOf[ColumnOption.SqlType].typeName
                 typeCustomization(typeName)
               }.getOrElse { super.rawType }

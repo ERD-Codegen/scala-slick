@@ -1,22 +1,21 @@
 package com.marmaladesky.realworld.db.gen
 // AUTO-GENERATED Slick data model
 /** Stand-alone Slick data model for immediate use */
-object Tables extends {
-  val profile = com.marmaladesky.realworld.db.DbProfile
-} with Tables
+object Tables extends Tables {
+  val profile: slick.jdbc.JdbcProfile = com.marmaladesky.realworld.db.DbProfile
+}
 
 /** Slick data model trait for extension, choice of backend or usage in the cake pattern. (Make sure to initialize this late.) */
 trait Tables {
   val profile: slick.jdbc.JdbcProfile
   import profile.api._
   import slick.model.ForeignKeyAction
-  // NOTE: GetResult mappers for plain SQL are only generated for tables where Slick knows how to map the types of all columns.
+  // NOTE: GetResult mappers for plain SQL are only generated for
+  // tables where Slick knows how to map the types of all columns.
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
   lazy val schema: profile.SchemaDescription = Array(ArticleComments.schema, ArticleFavorites.schema, Articles.schema, ArticleTags.schema, FlywaySchemaHistory.schema, Follows.schema, Users.schema).reduceLeft(_ ++ _)
-  @deprecated("Use .schema instead of .ddl", "3.0")
-  def ddl = schema
 
   /** Entity class storing rows of table ArticleComments
    *  @param commentId Database column comment_id SqlType(bigserial), AutoInc, PrimaryKey
@@ -29,13 +28,13 @@ trait Tables {
   /** GetResult implicit for fetching ArticleCommentsRow objects using plain SQL queries */
   implicit def GetResultArticleCommentsRow(implicit e0: GR[Long], e1: GR[String], e2: GR[java.time.OffsetDateTime]): GR[ArticleCommentsRow] = GR{
     prs => import prs._
-    ArticleCommentsRow.tupled((<<[Long], <<[Long], <<[String], <<[Long], <<[java.time.OffsetDateTime], <<[java.time.OffsetDateTime]))
+    (ArticleCommentsRow.apply _).tupled((<<[Long], <<[Long], <<[String], <<[Long], <<[java.time.OffsetDateTime], <<[java.time.OffsetDateTime]))
   }
   /** Table description of table article_comments. Objects of this class serve as prototypes for rows in queries. */
   class ArticleComments(_tableTag: Tag) extends profile.api.Table[ArticleCommentsRow](_tableTag, Some("condoit"), "article_comments") {
-    def * = (commentId, articleId, body, author, creationDate, lastUpdateDate) <> (ArticleCommentsRow.tupled, ArticleCommentsRow.unapply)
+    def * = ((commentId, articleId, body, author, creationDate, lastUpdateDate)).mapTo[ArticleCommentsRow]
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = ((Rep.Some(commentId), Rep.Some(articleId), Rep.Some(body), Rep.Some(author), Rep.Some(creationDate), Rep.Some(lastUpdateDate))).shaped.<>({r=>import r._; _1.map(_=> ArticleCommentsRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = ((Rep.Some(commentId), Rep.Some(articleId), Rep.Some(body), Rep.Some(author), Rep.Some(creationDate), Rep.Some(lastUpdateDate))).shaped.<>({r=>import r._; _1.map(_=> (ArticleCommentsRow.apply _).tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get)))}, (_:Any) => throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column comment_id SqlType(bigserial), AutoInc, PrimaryKey */
     val commentId: Rep[Long] = column[Long]("comment_id", O.AutoInc, O.PrimaryKey)
@@ -65,13 +64,13 @@ trait Tables {
   /** GetResult implicit for fetching ArticleFavoritesRow objects using plain SQL queries */
   implicit def GetResultArticleFavoritesRow(implicit e0: GR[Long]): GR[ArticleFavoritesRow] = GR{
     prs => import prs._
-    ArticleFavoritesRow.tupled((<<[Long], <<[Long]))
+    (ArticleFavoritesRow.apply _).tupled((<<[Long], <<[Long]))
   }
   /** Table description of table article_favorites. Objects of this class serve as prototypes for rows in queries. */
   class ArticleFavorites(_tableTag: Tag) extends profile.api.Table[ArticleFavoritesRow](_tableTag, Some("condoit"), "article_favorites") {
-    def * = (articleId, userId) <> (ArticleFavoritesRow.tupled, ArticleFavoritesRow.unapply)
+    def * = ((articleId, userId)).mapTo[ArticleFavoritesRow]
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = ((Rep.Some(articleId), Rep.Some(userId))).shaped.<>({r=>import r._; _1.map(_=> ArticleFavoritesRow.tupled((_1.get, _2.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = ((Rep.Some(articleId), Rep.Some(userId))).shaped.<>({r=>import r._; _1.map(_=> (ArticleFavoritesRow.apply _).tupled((_1.get, _2.get)))}, (_:Any) => throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column article_id SqlType(int8) */
     val articleId: Rep[Long] = column[Long]("article_id")
@@ -102,13 +101,13 @@ trait Tables {
   /** GetResult implicit for fetching ArticlesRow objects using plain SQL queries */
   implicit def GetResultArticlesRow(implicit e0: GR[Long], e1: GR[String], e2: GR[java.time.OffsetDateTime]): GR[ArticlesRow] = GR{
     prs => import prs._
-    ArticlesRow.tupled((<<[Long], <<[String], <<[String], <<[String], <<[String], <<[Long], <<[java.time.OffsetDateTime], <<[java.time.OffsetDateTime]))
+    (ArticlesRow.apply _).tupled((<<[Long], <<[String], <<[String], <<[String], <<[String], <<[Long], <<[java.time.OffsetDateTime], <<[java.time.OffsetDateTime]))
   }
   /** Table description of table articles. Objects of this class serve as prototypes for rows in queries. */
   class Articles(_tableTag: Tag) extends profile.api.Table[ArticlesRow](_tableTag, Some("condoit"), "articles") {
-    def * = (articleId, slug, title, description, body, author, creationDate, lastUpdateDate) <> (ArticlesRow.tupled, ArticlesRow.unapply)
+    def * = ((articleId, slug, title, description, body, author, creationDate, lastUpdateDate)).mapTo[ArticlesRow]
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = ((Rep.Some(articleId), Rep.Some(slug), Rep.Some(title), Rep.Some(description), Rep.Some(body), Rep.Some(author), Rep.Some(creationDate), Rep.Some(lastUpdateDate))).shaped.<>({r=>import r._; _1.map(_=> ArticlesRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7.get, _8.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = ((Rep.Some(articleId), Rep.Some(slug), Rep.Some(title), Rep.Some(description), Rep.Some(body), Rep.Some(author), Rep.Some(creationDate), Rep.Some(lastUpdateDate))).shaped.<>({r=>import r._; _1.map(_=> (ArticlesRow.apply _).tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6.get, _7.get, _8.get)))}, (_:Any) => throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column article_id SqlType(bigserial), AutoInc, PrimaryKey */
     val articleId: Rep[Long] = column[Long]("article_id", O.AutoInc, O.PrimaryKey)
@@ -140,13 +139,13 @@ trait Tables {
   /** GetResult implicit for fetching ArticleTagsRow objects using plain SQL queries */
   implicit def GetResultArticleTagsRow(implicit e0: GR[Long], e1: GR[String]): GR[ArticleTagsRow] = GR{
     prs => import prs._
-    ArticleTagsRow.tupled((<<[Long], <<[String]))
+    (ArticleTagsRow.apply _).tupled((<<[Long], <<[String]))
   }
   /** Table description of table article_tags. Objects of this class serve as prototypes for rows in queries. */
   class ArticleTags(_tableTag: Tag) extends profile.api.Table[ArticleTagsRow](_tableTag, Some("condoit"), "article_tags") {
-    def * = (articleId, tag) <> (ArticleTagsRow.tupled, ArticleTagsRow.unapply)
+    def * = ((articleId, tag)).mapTo[ArticleTagsRow]
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = ((Rep.Some(articleId), Rep.Some(tag))).shaped.<>({r=>import r._; _1.map(_=> ArticleTagsRow.tupled((_1.get, _2.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = ((Rep.Some(articleId), Rep.Some(tag))).shaped.<>({r=>import r._; _1.map(_=> (ArticleTagsRow.apply _).tupled((_1.get, _2.get)))}, (_:Any) => throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column article_id SqlType(int8) */
     val articleId: Rep[Long] = column[Long]("article_id")
@@ -177,14 +176,14 @@ trait Tables {
   /** GetResult implicit for fetching FlywaySchemaHistoryRow objects using plain SQL queries */
   implicit def GetResultFlywaySchemaHistoryRow(implicit e0: GR[Int], e1: GR[Option[String]], e2: GR[String], e3: GR[Option[Int]], e4: GR[java.sql.Timestamp], e5: GR[Boolean]): GR[FlywaySchemaHistoryRow] = GR{
     prs => import prs._
-    FlywaySchemaHistoryRow.tupled((<<[Int], <<?[String], <<[String], <<[String], <<[String], <<?[Int], <<[String], <<[java.sql.Timestamp], <<[Int], <<[Boolean]))
+    (FlywaySchemaHistoryRow.apply _).tupled((<<[Int], <<?[String], <<[String], <<[String], <<[String], <<?[Int], <<[String], <<[java.sql.Timestamp], <<[Int], <<[Boolean]))
   }
   /** Table description of table flyway_schema_history. Objects of this class serve as prototypes for rows in queries.
    *  NOTE: The following names collided with Scala keywords and were escaped: type */
   class FlywaySchemaHistory(_tableTag: Tag) extends profile.api.Table[FlywaySchemaHistoryRow](_tableTag, Some("condoit"), "flyway_schema_history") {
-    def * = (installedRank, version, description, `type`, script, checksum, installedBy, installedOn, executionTime, success) <> (FlywaySchemaHistoryRow.tupled, FlywaySchemaHistoryRow.unapply)
+    def * = ((installedRank, version, description, `type`, script, checksum, installedBy, installedOn, executionTime, success)).mapTo[FlywaySchemaHistoryRow]
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = ((Rep.Some(installedRank), version, Rep.Some(description), Rep.Some(`type`), Rep.Some(script), checksum, Rep.Some(installedBy), Rep.Some(installedOn), Rep.Some(executionTime), Rep.Some(success))).shaped.<>({r=>import r._; _1.map(_=> FlywaySchemaHistoryRow.tupled((_1.get, _2, _3.get, _4.get, _5.get, _6, _7.get, _8.get, _9.get, _10.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = ((Rep.Some(installedRank), version, Rep.Some(description), Rep.Some(`type`), Rep.Some(script), checksum, Rep.Some(installedBy), Rep.Some(installedOn), Rep.Some(executionTime), Rep.Some(success))).shaped.<>({r=>import r._; _1.map(_=> (FlywaySchemaHistoryRow.apply _).tupled((_1.get, _2, _3.get, _4.get, _5.get, _6, _7.get, _8.get, _9.get, _10.get)))}, (_:Any) => throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column installed_rank SqlType(int4), PrimaryKey */
     val installedRank: Rep[Int] = column[Int]("installed_rank", O.PrimaryKey)
@@ -221,13 +220,13 @@ trait Tables {
   /** GetResult implicit for fetching FollowsRow objects using plain SQL queries */
   implicit def GetResultFollowsRow(implicit e0: GR[Long]): GR[FollowsRow] = GR{
     prs => import prs._
-    FollowsRow.tupled((<<[Long], <<[Long]))
+    (FollowsRow.apply _).tupled((<<[Long], <<[Long]))
   }
   /** Table description of table follows. Objects of this class serve as prototypes for rows in queries. */
   class Follows(_tableTag: Tag) extends profile.api.Table[FollowsRow](_tableTag, Some("condoit"), "follows") {
-    def * = (masterId, slaveId) <> (FollowsRow.tupled, FollowsRow.unapply)
+    def * = ((masterId, slaveId)).mapTo[FollowsRow]
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = ((Rep.Some(masterId), Rep.Some(slaveId))).shaped.<>({r=>import r._; _1.map(_=> FollowsRow.tupled((_1.get, _2.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = ((Rep.Some(masterId), Rep.Some(slaveId))).shaped.<>({r=>import r._; _1.map(_=> (FollowsRow.apply _).tupled((_1.get, _2.get)))}, (_:Any) => throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column master_id SqlType(int8) */
     val masterId: Rep[Long] = column[Long]("master_id")
@@ -257,13 +256,13 @@ trait Tables {
   /** GetResult implicit for fetching UsersRow objects using plain SQL queries */
   implicit def GetResultUsersRow(implicit e0: GR[Long], e1: GR[String], e2: GR[Array[Byte]], e3: GR[Option[String]]): GR[UsersRow] = GR{
     prs => import prs._
-    UsersRow.tupled((<<[Long], <<[String], <<[Array[Byte]], <<[Array[Byte]], <<[String], <<?[String], <<?[String]))
+    (UsersRow.apply _).tupled((<<[Long], <<[String], <<[Array[Byte]], <<[Array[Byte]], <<[String], <<?[String], <<?[String]))
   }
   /** Table description of table users. Objects of this class serve as prototypes for rows in queries. */
   class Users(_tableTag: Tag) extends profile.api.Table[UsersRow](_tableTag, Some("condoit"), "users") {
-    def * = (userId, email, salt, hashedPbkdf2, username, bio, imageUrl) <> (UsersRow.tupled, UsersRow.unapply)
+    def * = ((userId, email, salt, hashedPbkdf2, username, bio, imageUrl)).mapTo[UsersRow]
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = ((Rep.Some(userId), Rep.Some(email), Rep.Some(salt), Rep.Some(hashedPbkdf2), Rep.Some(username), bio, imageUrl)).shaped.<>({r=>import r._; _1.map(_=> UsersRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6, _7)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = ((Rep.Some(userId), Rep.Some(email), Rep.Some(salt), Rep.Some(hashedPbkdf2), Rep.Some(username), bio, imageUrl)).shaped.<>({r=>import r._; _1.map(_=> (UsersRow.apply _).tupled((_1.get, _2.get, _3.get, _4.get, _5.get, _6, _7)))}, (_:Any) => throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column user_id SqlType(bigserial), AutoInc, PrimaryKey */
     val userId: Rep[Long] = column[Long]("user_id", O.AutoInc, O.PrimaryKey)

@@ -11,8 +11,10 @@ import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.AuthMiddleware
 import org.http4s.server.middleware.{CORS, Logger}
-import org.http4s.{Http, Method}
+import org.http4s.{HttpApp, Method}
+import org.typelevel.log4cats.LoggerFactory
 import slick.jdbc.JdbcBackend.Database
+import org.typelevel.log4cats.slf4j.Slf4jFactory
 
 import java.time.Clock
 import scala.concurrent.duration._
@@ -21,11 +23,7 @@ object RealWorldServer {
 
   private val DbExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def stream[F[_]: Async](
-    db: Database,
-    config: AppConfig
-  ): fs2.Stream[F, ExitCode] = {
-
+  private def app[F[_]: Async: LoggerFactory](db: Database): F[HttpApp[F]] = {
     val usersRepo = new UsersRepo[F](db, DbExecutionContext)
     val followsRepo = new FollowsRepo[F](db, DbExecutionContext)
 
@@ -41,10 +39,10 @@ object RealWorldServer {
 
     val httpApp = (
       UsersRoutes.publicRoutes(usersService) <+>
-      authOptMiddleware {
-        UsersRoutes.authedRoutes(usersService) <+>
-        ArticlesRoutes.authedRoutes(articlesService)
-      }
+        authOptMiddleware {
+          UsersRoutes.authedRoutes(usersService) <+>
+            ArticlesRoutes.authedRoutes(articlesService)
+        }
     ).orNotFound
 
     val corsPolicy = CORS.policy
@@ -53,17 +51,24 @@ object RealWorldServer {
       .withAllowMethodsIn(Set(Method.GET, Method.POST, Method.PUT, Method.DELETE))
       .withMaxAge(3.days)
 
-    val corsService: Http[F, F] = corsPolicy(httpApp)
+    corsPolicy(httpApp).map { app =>
+      Logger.httpApp(logHeaders = true, logBody = false)(app)
+    }
+  }
 
-    val finalHttpApp = Logger.httpApp(logHeaders = true, logBody = false)(corsService)
+  def stream[F[_]: Async](db: Database, config: AppConfig): fs2.Stream[F, ExitCode] = {
+    implicit val logging: LoggerFactory[F] = Slf4jFactory.create[F]
 
-    val errorHandler = new DefaultErrorHandler[F]
+    for {
+      app <- fs2.Stream.eval(app(db))
+      errorHandler = new DefaultErrorHandler[F]
+      stream <- BlazeServerBuilder[F]
+        .bindHttp(config.http.port, config.http.host)
+        .withHttpApp(app)
+        .withServiceErrorHandler(errorHandler)
+        .serve
+    } yield stream
 
-    BlazeServerBuilder[F]
-      .bindHttp(config.http.port, config.http.host)
-      .withHttpApp(finalHttpApp)
-      .withServiceErrorHandler(errorHandler)
-      .serve
   }
 
 }

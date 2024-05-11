@@ -16,10 +16,9 @@ trait DbProfile extends ExPostgresProfile
   with PgNetSupport
   with PgLTreeSupport {
 
-  override val api: API = MyAPI
+  override val api: ExtPostgresAPI = MyAPI
 
-  object MyAPI extends API with ArrayImplicits
-    with DateTimeImplicits
+  object MyAPI extends ExtPostgresAPI with ArrayImplicits
     with Date2DateTimePlainImplicits
     with NetImplicits
     with LTreeImplicits

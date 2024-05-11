@@ -10,9 +10,10 @@ import scala.util.Random
 class SlugGenerator[F[_]: Concurrent] {
 
   private val slg = {
-    new Slugify()
-      .withLowerCase(true)
-      .withUnderscoreSeparator(true)
+    Slugify.builder
+      .lowerCase(true)
+      .underscoreSeparator(true)
+      .build()
   }
 
   private val MaxRandomSuffix = 255
@@ -22,10 +23,10 @@ class SlugGenerator[F[_]: Concurrent] {
   }
 
   private def recursiveGen(
-    title: String,
-    verifyUnique: String => F[Boolean],
-    maxAttempts: Int = 5,
-    isFirst: Boolean = true
+      title: String,
+      verifyUnique: String => F[Boolean],
+      maxAttempts: Int = 5,
+      isFirst: Boolean = true
   ): F[Either[Throwable, String]] = {
     if (maxAttempts == 0) {
       return Concurrent[F].pure { ReadableError(s"Failed to generate unique slug from '$title'").asLeft }
@@ -47,14 +48,14 @@ class SlugGenerator[F[_]: Concurrent] {
       }
   }
 
-  /**
-    * Generate slug by title
-    * @param verifyUnique If the generated title doesn't unique in your context, you can use this parameter to request
-    *                     repeat generation with the random value suffixed
+  /** Generate slug by title
+    * @param verifyUnique
+    *   If the generated title doesn't unique in your context, you can use this parameter to request repeat generation
+    *   with the random value suffixed
     */
   def generateSlug(
-    title: String,
-    verifyUnique: String => F[Boolean] = _ => true.pure[F]
+      title: String,
+      verifyUnique: String => F[Boolean] = _ => true.pure[F]
   ): F[Either[Throwable, String]] = {
     recursiveGen(title, verifyUnique)
   }
