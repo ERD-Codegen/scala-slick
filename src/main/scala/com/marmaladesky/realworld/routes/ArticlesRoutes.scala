@@ -10,7 +10,7 @@ import io.circe.{Encoder, Json}
 import org.http4s.AuthedRoutes
 import org.http4s.dsl.Http4sDsl
 
-import java.time.OffsetDateTime
+import java.time.{OffsetDateTime, ZoneOffset}
 import java.time.format.DateTimeFormatter
 
 object ArticlesRoutes {
@@ -19,9 +19,10 @@ object ArticlesRoutes {
 
     implicit val j_Config: Configuration = Configuration.default.withDefaults
 
+    // specific format of date time required by condoit Postman testing
     implicit val custom_offset_encoder: Encoder[OffsetDateTime] = {
-      val formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSZ")
-      (a: OffsetDateTime) => Json.fromString(a.format(formatter))
+      val formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'")
+      (a: OffsetDateTime) => Json.fromString(a.atZoneSameInstant(ZoneOffset.UTC).format(formatter))
     }
 
     @ConfiguredJsonCodec
