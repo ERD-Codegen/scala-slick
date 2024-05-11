@@ -22,7 +22,7 @@ class UsersRoutesTest extends munit.FunSuite {
 
     val routes = buildRoutes { mock(classOf[UsersService[IO]]) }
 
-    val request = Request.apply[IO](method = Method.GET, uri = uri"/not_existing_routes" )
+    val request = Request.apply[IO](method = Method.GET, uri = uri"/not_existing_routes")
 
     val response = routes.apply(request).unsafeRunSync()
 
@@ -39,7 +39,7 @@ class UsersRoutesTest extends munit.FunSuite {
       m
     }
 
-    val request = Request.apply[IO](method = Method.GET, uri = uri"/api/profiles/username" )
+    val request = Request.apply[IO](method = Method.GET, uri = uri"/api/profiles/username")
 
     val response = routes.apply(request).unsafeRunSync()
 

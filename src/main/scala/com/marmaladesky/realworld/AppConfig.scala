@@ -6,8 +6,8 @@ import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 
 case class AppConfig(
-  http: Http,
-  db: Config
+    http: Http,
+    db: Config
 )
 
 object AppConfig {

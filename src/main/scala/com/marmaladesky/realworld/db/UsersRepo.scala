@@ -32,11 +32,12 @@ class UsersRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
     val q = for {
       existingLogin <- Tables.Users.filter(_.username === username).result.map { _.headOption }
       existingEmail <- Tables.Users.filter(_.email === email).result.map { _.headOption }
-      _ = if (existingLogin.isDefined)
-            throw ReadableError(s"Username '$username' already exists", codeHint = Status.BadRequest.code)
-          else if (existingEmail.isDefined) {
-            throw ReadableError(s"Email '$email' already exists", codeHint = Status.BadRequest.code)
-          } else ()
+      _ =
+        if (existingLogin.isDefined)
+          throw ReadableError(s"Username '$username' already exists", codeHint = Status.BadRequest.code)
+        else if (existingEmail.isDefined) {
+          throw ReadableError(s"Email '$email' already exists", codeHint = Status.BadRequest.code)
+        } else ()
       id <- (Tables.Users returning Tables.Users.map(_.userId)) += createUserRow
       userCreated <- Tables.Users
         .filter { _.userId === id }
@@ -66,13 +67,13 @@ class UsersRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
   }
 
   def updateUser(
-    userId: Long,
-    email: Option[String] = None,
-    username: Option[String] = None,
-    bio: Option[String] = None,
-    image: Option[String] = None,
-    salt: Option[Array[Byte]] = None,
-    hashedPbkdf2: Option[Array[Byte]] = None
+      userId: Long,
+      email: Option[String] = None,
+      username: Option[String] = None,
+      bio: Option[String] = None,
+      image: Option[String] = None,
+      salt: Option[Array[Byte]] = None,
+      hashedPbkdf2: Option[Array[Byte]] = None
   ): OptionT[F, Tables.UsersRow] = {
 
     val q = for {
@@ -97,14 +98,15 @@ class UsersRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
         case None =>
           SuccessAction(None)
       }
-      updatedRow <- if (existingOpt.isDefined) {
-        Tables.Users
-          .filter { _.userId === userId }
-          .result
-          .map { _.headOption }
-      } else {
-        SuccessAction(None)
-      }
+      updatedRow <-
+        if (existingOpt.isDefined) {
+          Tables.Users
+            .filter { _.userId === userId }
+            .result
+            .map { _.headOption }
+        } else {
+          SuccessAction(None)
+        }
 
     } yield updatedRow
 

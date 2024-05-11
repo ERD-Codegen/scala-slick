@@ -21,7 +21,7 @@ class ArticlesServiceTest extends munit.FunSuite {
 
     val articlesRepo = mock(classOf[ArticlesRepo[IO]])
     when(articlesRepo.createArticle(any[String], any[String], any[String], any[String], any[Long], any[Set[String]]))
-      .thenReturn( IO.pure {
+      .thenReturn(IO.pure {
         (
           ArticlesRow(1, "expected_slug", "", "", "", 1L, OffsetDateTime.now(), OffsetDateTime.now()),
           Seq.empty

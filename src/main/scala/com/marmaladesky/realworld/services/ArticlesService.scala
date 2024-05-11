@@ -23,55 +23,55 @@ trait ArticlesService[F[_]] {
   def getArticle(slug: String): OptionT[F, Article]
 
   def updateArticle(
-    userId: Long,
-    slug: String,
-    title: Option[String],
-    description: Option[String],
-    body: Option[String]
+      userId: Long,
+      slug: String,
+      title: Option[String],
+      description: Option[String],
+      body: Option[String]
   ): OptionT[F, Article]
 
   def deleteArticle(userId: Long, slug: String): F[Boolean]
 
   def listArticles(
-    tag: Option[String],
-    author: Option[String],
-    favoritedByUser: Option[String],
-    limit: Int,
-    offset: Int,
-    userId: Option[Long] = None
+      tag: Option[String],
+      author: Option[String],
+      favoritedByUser: Option[String],
+      limit: Int,
+      offset: Int,
+      userId: Option[Long] = None
   ): F[Page[Article]]
 
   def feedArticles(
-    userId: Long,
-    limit: Int,
-    offset: Int
+      userId: Long,
+      limit: Int,
+      offset: Int
   ): F[Page[Article]]
 
   def favoriteArticle(
-    userId: Long,
-    slug: String
+      userId: Long,
+      slug: String
   ): OptionT[F, Article]
 
   def unFavoriteArticle(
-    userId: Long,
-    slug: String
+      userId: Long,
+      slug: String
   ): OptionT[F, Article]
 
   def addComment(
-    userId: Long,
-    slug: String,
-    body: String
+      userId: Long,
+      slug: String,
+      body: String
   ): OptionT[F, Comment]
 
   def listComments(
-    userId: Option[Long],
-    slug: String,
+      userId: Option[Long],
+      slug: String
   ): OptionT[F, Seq[Comment]]
 
   def deleteComment(
-    userId: Long,
-    slug: String,
-    commentId: Long
+      userId: Long,
+      slug: String,
+      commentId: Long
   ): F[Boolean]
 
   def tags: F[Set[String]]
@@ -81,32 +81,32 @@ trait ArticlesService[F[_]] {
 object ArticlesService {
 
   case class Article(
-    articleId: Long,
-    slug: String,
-    title: String,
-    description: String,
-    body: String,
-    author: Author,
-    favorited: Boolean,
-    favoritesCount: Int,
-    createdAt: OffsetDateTime,
-    updatedAt: OffsetDateTime,
-    tags: Set[String]
+      articleId: Long,
+      slug: String,
+      title: String,
+      description: String,
+      body: String,
+      author: Author,
+      favorited: Boolean,
+      favoritesCount: Int,
+      createdAt: OffsetDateTime,
+      updatedAt: OffsetDateTime,
+      tags: Set[String]
   )
 
   case class Author(
-    username: String,
-    bio: Option[String],
-    image: Option[String],
-    following: Boolean
+      username: String,
+      bio: Option[String],
+      image: Option[String],
+      following: Boolean
   )
 
   case class Comment(
-    commentId: Long,
-    createdAt: OffsetDateTime,
-    updatedAt: OffsetDateTime,
-    body: String,
-    author: Author
+      commentId: Long,
+      createdAt: OffsetDateTime,
+      updatedAt: OffsetDateTime,
+      body: String,
+      author: Author
   )
 
   private def readRow(authorRow: UsersRow, isFollowingAuthor: Boolean): Author = {
@@ -119,12 +119,12 @@ object ArticlesService {
   }
 
   private def readRow(
-    row: ArticlesRow,
-    authorRow: UsersRow,
-    isFollowingAuthor: Boolean,
-    isFavoriteArticle: Boolean,
-    articleFavoritesCount: Int,
-    tags: Seq[ArticleTagsRow]
+      row: ArticlesRow,
+      authorRow: UsersRow,
+      isFollowingAuthor: Boolean,
+      isFavoriteArticle: Boolean,
+      articleFavoritesCount: Int,
+      tags: Seq[ArticleTagsRow]
   ): Article = {
     Article(
       articleId = row.articleId,
@@ -141,11 +141,11 @@ object ArticlesService {
     )
   }
 
-  def impl[F[_] : Async](
-    articlesRepo: ArticlesRepo[F],
-    usersRepo: UsersRepo[F],
-    followsRepo: FollowsRepo[F],
-    slugGenerator: SlugGenerator[F]
+  def impl[F[_]: Async](
+      articlesRepo: ArticlesRepo[F],
+      usersRepo: UsersRepo[F],
+      followsRepo: FollowsRepo[F],
+      slugGenerator: SlugGenerator[F]
   ): ArticlesService[F] = new ArticlesService[F] {
 
     private def verifySlug(slug: String): F[Boolean] = {
@@ -157,15 +157,15 @@ object ArticlesService {
     }
 
     override def createArticle(
-      userId: Long,
-      title: String,
-      description: String,
-      body: String,
-      tags: Set[String]
+        userId: Long,
+        title: String,
+        description: String,
+        body: String,
+        tags: Set[String]
     ): F[Article] = {
       for {
         slugAttempt <- generateSlug(title)
-        slug <- Concurrent[F].fromEither( slugAttempt )
+        slug <- Concurrent[F].fromEither(slugAttempt)
         articleAndTags <- articlesRepo.createArticle(slug, title, description, body, userId, tags)
         (article, tags) = articleAndTags
         author <- usersRepo
@@ -227,11 +227,11 @@ object ArticlesService {
     }
 
     override def updateArticle(
-      userId: Long,
-      slug: String,
-      title: Option[String],
-      description: Option[String],
-      body: Option[String]
+        userId: Long,
+        slug: String,
+        title: Option[String],
+        description: Option[String],
+        body: Option[String]
     ): OptionT[F, Article] = {
       for {
         newSlug <- title match {
@@ -279,12 +279,12 @@ object ArticlesService {
     }
 
     override def listArticles(
-      tag: Option[String],
-      author: Option[String],
-      favoritedByUser: Option[String],
-      limit: Int,
-      offset: Int,
-      userId: Option[Long] = None
+        tag: Option[String],
+        author: Option[String],
+        favoritedByUser: Option[String],
+        limit: Int,
+        offset: Int,
+        userId: Option[Long] = None
     ): F[Page[Article]] = {
 
       for {
@@ -292,8 +292,10 @@ object ArticlesService {
           case Some(username) =>
             usersRepo
               .getUserByUsername(username)
-              .getOrElseF { Async[F].raiseError {
-                ReadableError(s"User $username doesn't exist", codeHint = Status.NotFound.code) }
+              .getOrElseF {
+                Async[F].raiseError {
+                  ReadableError(s"User $username doesn't exist", codeHint = Status.NotFound.code)
+                }
               }
               .map(_.some)
           case None => None.pure[F]
@@ -329,7 +331,8 @@ object ArticlesService {
     }
 
     override def favoriteArticle(userId: Long, slug: String): OptionT[F, Article] = {
-      articlesRepo.favoriteArticle(userId: Long, slug: String)
+      articlesRepo
+        .favoriteArticle(userId: Long, slug: String)
         .map { detailed =>
           readRow(
             row = detailed.article,
@@ -343,7 +346,8 @@ object ArticlesService {
     }
 
     override def unFavoriteArticle(userId: Long, slug: String): OptionT[F, Article] = {
-      articlesRepo.unFavoriteArticle(userId: Long, slug: String)
+      articlesRepo
+        .unFavoriteArticle(userId: Long, slug: String)
         .map { detailed =>
           readRow(
             row = detailed.article,

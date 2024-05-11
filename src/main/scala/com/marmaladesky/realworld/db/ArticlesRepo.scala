@@ -6,7 +6,13 @@ import cats.implicits._
 import com.marmaladesky.realworld.db.ArticlesRepo.{ArticleCommentWithDetails, ArticleWithDetails}
 import com.marmaladesky.realworld.db.DbProfile.api._
 import com.marmaladesky.realworld.db.gen.Tables
-import com.marmaladesky.realworld.db.gen.Tables.{ArticleCommentsRow, ArticleFavoritesRow, ArticleTagsRow, ArticlesRow, UsersRow}
+import com.marmaladesky.realworld.db.gen.Tables.{
+  ArticleCommentsRow,
+  ArticleFavoritesRow,
+  ArticleTagsRow,
+  ArticlesRow,
+  UsersRow
+}
 import com.marmaladesky.realworld.model.Page
 import slick.dbio.SuccessAction
 import slick.jdbc.JdbcBackend
@@ -20,15 +26,16 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
   private implicit val executionContext: ExecutionContext = ec
 
   def createArticle(
-    slug: String,
-    title: String,
-    description: String,
-    body: String,
-    author: Long,
-    tags: Set[String]): F[(ArticlesRow, Seq[ArticleTagsRow])] = {
+      slug: String,
+      title: String,
+      description: String,
+      body: String,
+      author: Long,
+      tags: Set[String]
+  ): F[(ArticlesRow, Seq[ArticleTagsRow])] = {
 
     val q = for {
-      articleId <- (Tables.Articles returning Tables.Articles.map(_.articleId) ) += ArticlesRow(
+      articleId <- (Tables.Articles returning Tables.Articles.map(_.articleId)) += ArticlesRow(
         articleId = 0L,
         slug = slug,
         title = title,
@@ -43,7 +50,7 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
         .filter(_.articleId === articleId)
         .result
         .map { _.headOption.getOrElse(throw new RuntimeException("Cannot to verify created article")) }
-      newTags <-Tables.ArticleTags.filter(_.articleId === articleId).result
+      newTags <- Tables.ArticleTags.filter(_.articleId === articleId).result
     } yield inserted -> newTags
 
     liftQ { q.transactionally }
@@ -69,16 +76,16 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
   }
 
   def updateArticle(
-    slug: String,
-    author: Long,
-    newSlug: Option[String],
-    title: Option[String],
-    description: Option[String],
-    body: Option[String]
+      slug: String,
+      author: Long,
+      newSlug: Option[String],
+      title: Option[String],
+      description: Option[String],
+      body: Option[String]
   ): OptionT[F, (ArticlesRow, Seq[ArticleTagsRow])] = {
 
     val q = for {
-      existingOpt <- Tables.Articles.filter(r => r.slug === slug && r.author === author ).result.map { _.headOption }
+      existingOpt <- Tables.Articles.filter(r => r.slug === slug && r.author === author).result.map { _.headOption }
       _ <- existingOpt match {
         case Some(existing) =>
           Tables.Articles
@@ -140,10 +147,9 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
     Tables.ArticleTags
       .filter(_.articleId inSet articlesIds)
       .result
-      .map { _
-        .groupBy { _.articleId }
-        .view
-        .mapValues { _.toSet }
+      .map {
+        _.groupBy { _.articleId }.view
+          .mapValues { _.toSet }
       }
   }
 
@@ -160,7 +166,7 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
     Tables.ArticleFavorites
       .filter { r => (r.articleId inSet articlesIds) && r.userId === userId }
       .result
-      .map { _.map { _.articleId } .toSet }
+      .map { _.map { _.articleId }.toSet }
   }
 
   private def followedAuthorsQ(authorsIds: Set[Long], userId: Long) = {
@@ -172,12 +178,12 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
   }
 
   def listArticles(
-    tag: Option[String],
-    author: Option[String],
-    favoritedByUser: Option[Long],
-    requestorIdOpt: Option[Long],
-    limit: Int,
-    offset: Int
+      tag: Option[String],
+      author: Option[String],
+      favoritedByUser: Option[Long],
+      requestorIdOpt: Option[Long],
+      limit: Int,
+      offset: Int
   ): F[Page[ArticleWithDetails]] = {
 
     val articlesQ = Tables.Articles
@@ -188,7 +194,9 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
       }
       .filterOpt(favoritedByUser) { (article, favUser) =>
         article.articleId.in {
-          Tables.ArticleFavorites.filter(f => f.userId === favUser && f.articleId === article.articleId).map(_.articleId)
+          Tables.ArticleFavorites
+            .filter(f => f.userId === favUser && f.articleId === article.articleId)
+            .map(_.articleId)
         }
       }
 
@@ -206,16 +214,16 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
     val q = for {
       total <- countQ
       items <- pageQ
-      articleIds = items.map(  _._1.articleId).toSet
+      articleIds = items.map(_._1.articleId).toSet
       tagsByArticle <- tagsQ(articleIds)
       favoritesCountByArticle <- favoritesCountQ(articleIds)
       favoritedArticles <- requestorIdOpt match {
         case Some(requestorId) => favoritedArticlesQ(articleIds, requestorId)
-        case None => SuccessAction(Set.empty[Long])
+        case None              => SuccessAction(Set.empty[Long])
       }
       followedAuthors <- requestorIdOpt match {
         case Some(requestorId) => followedAuthorsQ(items.map(_._1.author).toSet, requestorId)
-        case None => SuccessAction(Set.empty[Long])
+        case None              => SuccessAction(Set.empty[Long])
       }
       detailedItems = items.map { case (article, author) =>
         ArticleWithDetails(
@@ -233,9 +241,9 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
   }
 
   def feedArticles(
-    clientUserId: Long,
-    limit: Int,
-    offset: Int
+      clientUserId: Long,
+      limit: Int,
+      offset: Int
   ): F[Page[ArticleWithDetails]] = {
 
     val articlesQ = Tables.Articles
@@ -254,7 +262,7 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
     val q = for {
       total <- countQ
       items <- pageQ
-      articleIds = items.map(  _._1.articleId).toSet
+      articleIds = items.map(_._1.articleId).toSet
       tagsByArticle <- tagsQ(articleIds)
       favoritesCountByArticle <- favoritesCountQ(articleIds)
       favoritedArticles <- favoritedArticlesQ(articleIds, clientUserId)
@@ -280,12 +288,16 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
       _ <- articleOpt match {
         case Some(article) =>
           for {
-            isFavorite <- Tables.ArticleFavorites.filter(r => r.articleId === article.articleId && r.userId === userId).exists.result
-            result <- if (!isFavorite) {
-              Tables.ArticleFavorites += ArticleFavoritesRow(article.articleId, userId)
-            } else {
-              SuccessAction(0)
-            }
+            isFavorite <- Tables.ArticleFavorites
+              .filter(r => r.articleId === article.articleId && r.userId === userId)
+              .exists
+              .result
+            result <-
+              if (!isFavorite) {
+                Tables.ArticleFavorites += ArticleFavoritesRow(article.articleId, userId)
+              } else {
+                SuccessAction(0)
+              }
           } yield result
         case None =>
           SuccessAction(0)
@@ -370,10 +382,10 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
           Tables.ArticleComments
             .filter(_.commentId === insertedId)
             .result
-            .map { _
-              .headOption
-              .getOrElse { throw new RuntimeException(s"Failed to verify inserted comment with id '$insertedId'") }
-              .some
+            .map {
+              _.headOption
+                .getOrElse { throw new RuntimeException(s"Failed to verify inserted comment with id '$insertedId'") }
+                .some
             }
         case None =>
           SuccessAction(None)
@@ -399,14 +411,12 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
                 _.map { a => a.userId -> a }.toMap
               }
           } yield {
-            comments
-              .flatMap { commentRow =>
-                authors
-                  .get(commentRow.author)
-                  .map { author => ArticleCommentWithDetails(commentRow, author) }
-                  .toSeq
-              }
-              .some
+            comments.flatMap { commentRow =>
+              authors
+                .get(commentRow.author)
+                .map { author => ArticleCommentWithDetails(commentRow, author) }
+                .toSeq
+            }.some
           }
         case None =>
           SuccessAction(None)
@@ -436,16 +446,17 @@ class ArticlesRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
 object ArticlesRepo {
 
   case class ArticleWithDetails(
-    article: ArticlesRow,
-    tags: Set[ArticleTagsRow],
-    author: UsersRow,
-    isFollowingAuthor: Boolean,
-    isFavorited: Boolean,
-    totalFavorites: Int)
+      article: ArticlesRow,
+      tags: Set[ArticleTagsRow],
+      author: UsersRow,
+      isFollowingAuthor: Boolean,
+      isFavorited: Boolean,
+      totalFavorites: Int
+  )
 
   case class ArticleCommentWithDetails(
-    comment: ArticleCommentsRow,
-    author: UsersRow
+      comment: ArticleCommentsRow,
+      author: UsersRow
   )
 
 }

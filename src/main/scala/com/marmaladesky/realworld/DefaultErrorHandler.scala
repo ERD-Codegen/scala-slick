@@ -14,12 +14,12 @@ import org.http4s.{Http, Request, Response}
 import java.util.UUID
 
 class DefaultErrorHandler[F[_]: Sync] extends ServiceErrorHandler[F] with LazyLogging {
-  private val dsl = new Http4sDsl[F]{}
+  private val dsl = new Http4sDsl[F] {}
   import dsl._
 
   private def responseWithHint(code: Int, body: Json): F[Response[F]] = {
     code match {
-      case NotFound.code => NotFound(body)
+      case NotFound.code   => NotFound(body)
       case BadRequest.code => BadRequest(body)
       case other =>
         logger.error(s"Code '$other' cannot be used as a response hint")
@@ -49,8 +49,8 @@ class DefaultErrorHandler[F[_]: Sync] extends ServiceErrorHandler[F] with LazyLo
     }
   }
 
-  override def apply(req: Request[F]): PartialFunction[Throwable, F[Response[F]]] = {
-    case unexpected: Throwable => handle(unexpected)
+  override def apply(req: Request[F]): PartialFunction[Throwable, F[Response[F]]] = { case unexpected: Throwable =>
+    handle(unexpected)
   }
 
 }

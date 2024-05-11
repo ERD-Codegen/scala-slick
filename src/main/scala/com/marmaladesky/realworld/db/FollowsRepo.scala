@@ -25,7 +25,8 @@ class FollowsRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
         case Some(existing) =>
           SuccessAction(existing)
         case None =>
-          Tables.Follows.+= { FollowsRow(master, slave) }
+          Tables.Follows
+            .+= { FollowsRow(master, slave) }
             .flatMap { _ =>
               Tables.Follows
                 .filter { r => r.masterId === master && r.slaveId === slave }
@@ -57,17 +58,13 @@ class FollowsRepo[F[_]: Async](db: Database, ec: ExecutionContext) {
   }
 
   def getFollowers(master: Long): F[Seq[FollowsRow]] = {
-    val q = Tables.Follows
-      .filter { r => r.masterId === master }
-      .result
+    val q = Tables.Follows.filter { r => r.masterId === master }.result
 
     liftQ { q.transactionally }
   }
 
   def getFollowed(slave: Long): F[Seq[FollowsRow]] = {
-    val q = Tables.Follows
-      .filter { r => r.slaveId === slave }
-      .result
+    val q = Tables.Follows.filter { r => r.slaveId === slave }.result
 
     liftQ { q.transactionally }
   }

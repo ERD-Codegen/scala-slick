@@ -20,7 +20,9 @@ package object db {
     lift[F, R] { db.run(q) }
   }
 
-  def liftQ[F[_], R, E <: Effect](q: DBIOAction[Option[R], NoStream, E])(implicit async: Async[F], db: Database): OptionT[F, R] = {
+  def liftQ[F[_], R, E <: Effect](
+      q: DBIOAction[Option[R], NoStream, E]
+  )(implicit async: Async[F], db: Database): OptionT[F, R] = {
     OptionT { lift[F, Option[R]] { db.run(q) } }
   }
 

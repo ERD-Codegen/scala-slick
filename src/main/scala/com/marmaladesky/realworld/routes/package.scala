@@ -10,9 +10,10 @@ package object routes {
   def withAuthRequired[F[_]](authOpt: Option[AuthContext])(implicit C: Concurrent[F]): F[AuthContext] = {
     authOpt match {
       case Some(value) => value.pure[F]
-      case None => C.raiseError {
-        ReadableError("Missing authentication", codeHint = Status.Forbidden.code)
-      }
+      case None =>
+        C.raiseError {
+          ReadableError("Missing authentication", codeHint = Status.Forbidden.code)
+        }
     }
   }
 

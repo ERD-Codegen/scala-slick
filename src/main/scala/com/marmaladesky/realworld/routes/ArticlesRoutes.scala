@@ -30,16 +30,16 @@ object ArticlesRoutes {
 
     @ConfiguredJsonCodec
     case class ArticleBody(
-      slug: String,
-      title: String,
-      description: String,
-      body: String,
-      tagList: Seq[String],
-      createdAt: OffsetDateTime,
-      updatedAt: OffsetDateTime,
-      favorited: Boolean,
-      favoritesCount: Int,
-      author: Author
+        slug: String,
+        title: String,
+        description: String,
+        body: String,
+        tagList: Seq[String],
+        createdAt: OffsetDateTime,
+        updatedAt: OffsetDateTime,
+        favorited: Boolean,
+        favoritesCount: Int,
+        author: Author
     )
 
     @ConfiguredJsonCodec
@@ -137,7 +137,7 @@ object ArticlesRoutes {
       Encoder.instance { p =>
         Json.obj(
           "articlesCount" -> Json.fromInt(p.total),
-          "articles" -> Json.arr(p.items.map(E.apply):_*)
+          "articles" -> Json.arr(p.items.map(E.apply): _*)
         )
       }
     }
@@ -161,7 +161,7 @@ object ArticlesRoutes {
             body = createReq.article.body,
             tagList = createReq.article.tagList.map(_.toSet).getOrElse { Set.empty }
           )
-          response <-  Ok { toResponse(article).asJson }
+          response <- Ok { toResponse(article).asJson }
         } yield response
 
       case GET -> Root / "api" / "articles" / "feed" :? LimitP(limit) +& OffsetP(offset) as authOpt =>
@@ -175,7 +175,7 @@ object ArticlesRoutes {
       case GET -> Root / "api" / "articles" / slug as authOpt =>
         val article = authOpt match {
           case Some(auth) => service.getArticle(auth.userId, slug)
-          case None => service.getArticle(slug)
+          case None       => service.getArticle(slug)
         }
         article
           .semiflatMap { article => Ok { toResponse(article).asJson } }
@@ -186,16 +186,18 @@ object ArticlesRoutes {
           auth <- withAuthRequired(authOpt)
           json <- req.req.asJson
           updateReq <- Concurrent[F].fromEither { json.as[UpdateArticleRequest] }
-          articleOpt <- service.updateArticle(
-            userId = auth.userId,
-            slug = slug,
-            title = updateReq.article.title,
-            description = updateReq.article.description,
-            body = updateReq.article.body
-          ).value
+          articleOpt <- service
+            .updateArticle(
+              userId = auth.userId,
+              slug = slug,
+              title = updateReq.article.title,
+              description = updateReq.article.description,
+              body = updateReq.article.body
+            )
+            .value
           response <- articleOpt match {
             case Some(article) => Ok { toResponse(article).asJson }
-            case None => NotFound()
+            case None          => NotFound()
           }
         } yield response
 
@@ -203,19 +205,20 @@ object ArticlesRoutes {
         for {
           auth <- withAuthRequired(authOpt)
           wasDeleted <- service.deleteArticle(auth.userId, slug)
-          response <- if (wasDeleted) {
-            Ok()
-          } else {
-            NotFound()
-          }
+          response <-
+            if (wasDeleted) {
+              Ok()
+            } else {
+              NotFound()
+            }
         } yield response
 
       case GET -> Root / "api" / "articles" :?
-        TagP(tag) +&
-        AuthorP(author) +&
-        FavoritedP(favorited) +&
-        LimitP(limit) +&
-        OffsetP(offset) as auth =>
+          TagP(tag) +&
+          AuthorP(author) +&
+          FavoritedP(favorited) +&
+          LimitP(limit) +&
+          OffsetP(offset) as auth =>
         val userIdOpt = auth.map(_.userId)
 
         service
@@ -248,7 +251,7 @@ object ArticlesRoutes {
           commentOpt <- service.addComment(auth.userId, slug, createReq.comment.body).value
           response <- commentOpt match {
             case Some(comment) => Ok { toResponse(comment).asJson }
-            case None => NotFound("")
+            case None          => NotFound("")
           }
         } yield response
 
@@ -259,7 +262,7 @@ object ArticlesRoutes {
           commentsOpt <- service.listComments(userIdOpt, slug).value
           response <- commentsOpt match {
             case Some(comments) => Ok { toResponse(comments).asJson }
-            case None => NotFound("")
+            case None           => NotFound("")
           }
         } yield response
 
@@ -267,11 +270,12 @@ object ArticlesRoutes {
         for {
           auth <- withAuthRequired(authOpt)
           wasDeleted <- service.deleteComment(auth.userId, slug, commentId)
-          response <- if (wasDeleted) {
-            Ok("")
-          } else {
-            NotFound("")
-          }
+          response <-
+            if (wasDeleted) {
+              Ok("")
+            } else {
+              NotFound("")
+            }
         } yield response
 
       case GET -> Root / "api" / "tags" as _ =>

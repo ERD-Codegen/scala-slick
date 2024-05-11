@@ -22,7 +22,7 @@ object UsersRoutes {
     @ConfiguredJsonCodec
     case class ProfileResponse(profile: UserProfile)
     @ConfiguredJsonCodec
-    case class UserProfile(username: String, bio: Option[String],  image: Option[String], following: Boolean)
+    case class UserProfile(username: String, bio: Option[String], image: Option[String], following: Boolean)
 
     @ConfiguredJsonCodec
     case class LoginRequest(user: UserAuth)
@@ -37,17 +37,17 @@ object UsersRoutes {
     @ConfiguredJsonCodec
     case class UserAuthResponse(user: UserServer)
     @ConfiguredJsonCodec
-    case class UserServer(email: String, token: String,  username: String, bio: Option[String], image: Option[String])
+    case class UserServer(email: String, token: String, username: String, bio: Option[String], image: Option[String])
 
     @ConfiguredJsonCodec
     case class UpdateUserRequest(user: UpdateUserRequestBody)
     @ConfiguredJsonCodec
     case class UpdateUserRequestBody(
-      email: Option[String],
-      username: Option[String],
-      password: Option[String],
-      bio: Option[String],
-      image: Option[String]
+        email: Option[String],
+        username: Option[String],
+        password: Option[String],
+        bio: Option[String],
+        image: Option[String]
     )
 
   }
@@ -60,7 +60,7 @@ object UsersRoutes {
         token = token,
         username = user.username,
         bio = user.bio,
-        image = user.image,
+        image = user.image
       )
     )
   }
@@ -105,7 +105,7 @@ object UsersRoutes {
                 token = token,
                 username = user.username,
                 bio = user.bio,
-                image = user.image,
+                image = user.image
               )
             ).asJson
           }
@@ -114,9 +114,13 @@ object UsersRoutes {
       case GET -> Root / "api" / "profiles" / username =>
         userService
           .getUser(username)
-          .semiflatMap { u => Ok {
-            ProfileResponse(UserProfile(username = u.username, bio = u.bio, image = u.image, following = false)).asJson
-          } }
+          .semiflatMap { u =>
+            Ok {
+              ProfileResponse(
+                UserProfile(username = u.username, bio = u.bio, image = u.image, following = false)
+              ).asJson
+            }
+          }
           .getOrElseF(NotFound())
 
     }
@@ -134,8 +138,8 @@ object UsersRoutes {
           auth <- withAuthRequired(authOpt)
           userOpt <- userService.getUser(auth.userId).value
           response <- userOpt match {
-            case Some(user) => Ok { writeUserModel(user, auth.token ).asJson }
-            case None => NotFound()
+            case Some(user) => Ok { writeUserModel(user, auth.token).asJson }
+            case None       => NotFound()
           }
 
         } yield response
@@ -145,19 +149,21 @@ object UsersRoutes {
           auth <- withAuthRequired(authOpt)
           json <- req.req.asJson
           updateReq <- Concurrent[F].fromEither { json.as[UpdateUserRequest] }
-          userOpt <- userService.updateUser(
-            User.UserPartialUpdate(
-              userId = auth.userId,
-              email = updateReq.user.email,
-              username = updateReq.user.username,
-              password = updateReq.user.password,
-              bio = updateReq.user.bio,
-              image = updateReq.user.image
+          userOpt <- userService
+            .updateUser(
+              User.UserPartialUpdate(
+                userId = auth.userId,
+                email = updateReq.user.email,
+                username = updateReq.user.username,
+                password = updateReq.user.password,
+                bio = updateReq.user.bio,
+                image = updateReq.user.image
+              )
             )
-          ).value
+            .value
           response <- userOpt match {
-            case Some(user) => Ok { writeUserModel(user, auth.token ).asJson }
-            case None => NotFound()
+            case Some(user) => Ok { writeUserModel(user, auth.token).asJson }
+            case None       => NotFound()
           }
 
         } yield response
@@ -191,10 +197,11 @@ object UsersRoutes {
     }
   }
 
-  def authUserOpt[F[_]: Async](userService: UsersService[F]): Kleisli[OptionT[F, *] , Request[F], Option[AuthContext]] = {
+  def authUserOpt[F[_]: Async](
+      userService: UsersService[F]
+  ): Kleisli[OptionT[F, *], Request[F], Option[AuthContext]] = {
     Kleisli { req =>
-      val tokenOpt = req
-        .headers
+      val tokenOpt = req.headers
         .get(ci"Authorization")
         .map { _.head }
         .flatMap { _.value.split(" ").lift(1) }

@@ -7,25 +7,28 @@ import java.time.OffsetDateTime
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 import java.time.temporal.ChronoField
 
-trait DbProfile extends ExPostgresProfile
-  with PgArraySupport
-  with PgDate2Support
-  with PgRangeSupport
-  with PgHStoreSupport
-  with PgSearchSupport
-  with PgNetSupport
-  with PgLTreeSupport {
+trait DbProfile
+    extends ExPostgresProfile
+    with PgArraySupport
+    with PgDate2Support
+    with PgRangeSupport
+    with PgHStoreSupport
+    with PgSearchSupport
+    with PgNetSupport
+    with PgLTreeSupport {
 
   override val api: ExtPostgresAPI = MyAPI
 
-  object MyAPI extends ExtPostgresAPI with ArrayImplicits
-    with Date2DateTimePlainImplicits
-    with NetImplicits
-    with LTreeImplicits
-    with RangeImplicits
-    with HStoreImplicits
-    with SearchImplicits
-    with SearchAssistants {
+  object MyAPI
+      extends ExtPostgresAPI
+      with ArrayImplicits
+      with Date2DateTimePlainImplicits
+      with NetImplicits
+      with LTreeImplicits
+      with RangeImplicits
+      with HStoreImplicits
+      with SearchImplicits
+      with SearchAssistants {
 
     // The timestampz can be received like this: '2021-11-03 23:17:16.440699+03' from postgresql
     // The default implementation doesn't support this
@@ -33,13 +36,13 @@ trait DbProfile extends ExPostgresProfile
       new DateTimeFormatterBuilder()
         .append(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         .optionalStart()
-        .appendFraction(ChronoField.NANO_OF_SECOND,0,6,true)
+        .appendFraction(ChronoField.NANO_OF_SECOND, 0, 6, true)
         .optionalEnd()
         .optionalStart()
-        .appendOffset("+HH:mm","+00")
+        .appendOffset("+HH:mm", "+00")
         .optionalEnd()
         .optionalStart()
-        .appendOffset("+HH","+00")
+        .appendOffset("+HH", "+00")
         .optionalEnd()
         .toFormatter()
 
@@ -55,8 +58,8 @@ trait DbProfile extends ExPostgresProfile
 
         override def getValue(r: ResultSet, idx: Int): OffsetDateTime = {
           r.getString(idx) match {
-            case null => null
-            case iso8601String : String => OffsetDateTime.parse(iso8601String, date2TzDateTimeFormatter)
+            case null                  => null
+            case iso8601String: String => OffsetDateTime.parse(iso8601String, date2TzDateTimeFormatter)
           }
         }
 

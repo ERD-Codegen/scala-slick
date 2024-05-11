@@ -52,29 +52,27 @@ object UsersService {
   private val DefaultIterations = 64000
   private val DefaultKeyLength = 512
 
-
   case class User(userId: Long, username: String, email: String, bio: Option[String], image: Option[String])
 
   object User {
 
     case class UserPartialUpdate(
-      userId: Long,
-      email: Option[String],
-      username: Option[String],
-      password: Option[String],
-      bio: Option[String],
-      image: Option[String]
+        userId: Long,
+        email: Option[String],
+        username: Option[String],
+        password: Option[String],
+        bio: Option[String],
+        image: Option[String]
     )
 
   }
 
   case class Profile(username: String, bio: Option[String], image: Option[String], following: Boolean)
 
-
   def impl[F[_]: Sync](
-    clock: Clock,
-    usersRepo: UsersRepo[F],
-    followsRepo: FollowsRepo[F]
+      clock: Clock,
+      usersRepo: UsersRepo[F],
+      followsRepo: FollowsRepo[F]
   ): UsersService[F] = new UsersService[F] {
 
     override def genJwtToken(userId: Long, password: String): F[String] = {
@@ -111,7 +109,6 @@ object UsersService {
       )
     }
 
-
     override def registration(username: String, email: String, password: String): F[User] = {
       val salt = generateSalt()
       val hash = generateKey(password, salt)
@@ -146,19 +143,20 @@ object UsersService {
       }
 
       for {
-        updated <- usersRepo.updateUser(
-          userId = update.userId,
-          email = update.email,
-          username = update.username,
-          bio = update.bio,
-          image = update.image,
-          salt = salt,
-          hashedPbkdf2 = hash,
-        ).map { readDbRow }
+        updated <- usersRepo
+          .updateUser(
+            userId = update.userId,
+            email = update.email,
+            username = update.username,
+            bio = update.bio,
+            image = update.image,
+            salt = salt,
+            hashedPbkdf2 = hash
+          )
+          .map { readDbRow }
       } yield updated
 
     }
-
 
     override def addFollow(masterUsername: String, slaveId: Long): OptionT[F, Profile] = {
       usersRepo
